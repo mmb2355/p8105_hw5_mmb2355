@@ -13,9 +13,6 @@ editor_options:
 ```{r}
 library(tidyverse)
 library(rvest)
-library(p8105.datasets)
-
-source("source/birthday_repeated.R")
 
 set.seed(127)
 ```
@@ -46,7 +43,40 @@ birthday_results_df |>
 
 ## Problem 2
 
-```{r}
+### Combining experimental and control data; tidying data
 
+```{r}
+long_study_df =
+  tibble(
+    file_path = c(list.files("data",full.names = TRUE))
+  )
+
+subjects_df =
+  long_study_df |> 
+  mutate(
+    filename = basename(file_path),
+    subject_id = str_remove(filename, "\\.csv$"),
+    arm = if_else(str_starts(filename, "con"), "control", "experimental"),
+    data = map(file_path, ~ read_csv(.x, show_col_types = FALSE))
+  ) |> 
+  unnest(data) |> 
+   pivot_longer(
+    cols = starts_with("week_"),
+    names_to = "week",
+    names_prefix = "week_",
+    values_to = "observation"
+  ) |> 
+  mutate(week = as.numeric(week)) |> 
+  select(subject_id, arm, week, observation)
 ```
 
+### Spaghetti plot
+
+```{r}
+subjects_df |> 
+  ggplot(aes(x = week, y = observation, color = arm)) +
+  geom_line(aes(group = subject_id)) +
+  geom_point()
+```
+
+* The control arm had overall less observations compared to the experimental arm The experimental arm observations increased over time while the control arm remained relatively level.
