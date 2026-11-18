@@ -13,6 +13,7 @@ editor_options:
 ```{r}
 library(tidyverse)
 library(rvest)
+library(patchwork)
 
 set.seed(127)
 ```
@@ -20,9 +21,10 @@ set.seed(127)
 ## Birthdays
 
 ```{r}
-birthdays = sample(1:365, size = 5, replace = TRUE)
-
-repeated_birthdays = length(unique(birthdays)) < 5
+birthday_repeated = function(n) {
+  birthdays = sample(1:365, size = n, replace = TRUE)
+  length(unique(birthdays)) < n
+}
 
 birthday_results_df = 
   expand_grid(
@@ -80,3 +82,4 @@ subjects_df |>
 ```
 
 * The control arm had overall less observations compared to the experimental arm The experimental arm observations increased over time while the control arm remained relatively level.
+
